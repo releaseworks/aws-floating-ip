@@ -1,5 +1,5 @@
 # AWS Floating IP
-This repository provides a script for implementing a Floating IP in AWS.
+This repository provides a script for implementing active-passive failover with a Floating IP (also known as a Virtual IP or VIP) in AWS EC2.
 
 The benefits and limitations of this approach are described in an AWS whitepaper: https://docs.aws.amazon.com/whitepapers/latest/real-time-communication-on-aws/floating-ip-pattern-for-ha-between-activestandby-stateful-servers.html
 
