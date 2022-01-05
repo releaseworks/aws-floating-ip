@@ -25,6 +25,8 @@ command -v aws >/dev/null 2>&1 || { echo >&2 "Error: AWS CLI not found"; exit 1;
 command -v ping >/dev/null 2>&1 || { echo >&2 "Error: ping not found"; exit 1; }
 command -v ifconfig >/dev/null 2>&1 || { echo >&2 "Error: ifconfig not found"; exit 1; }
 
+[[ -z "$DEBUG" ]] || echo "$(date) Starting $0 for floating IP $FLOATING_IP"
+
 # Main loop
 while [ 1 ]; do
     # Sleep a random duration between 30 and 60 seconds to avoid race conditions
@@ -41,17 +43,17 @@ while [ 1 ]; do
 
     # Check if we have the FLOATING_IP, and continue to the next iteration if so
     if [[ "$LOCAL_IPS" == *"$FLOATING_IP"* ]]; then
-        [[ -v DEBUG ]] && echo "$(date) I have the floating IP, skipping."
+        [[ -z "$DEBUG" ]] || echo "$(date) I have the floating IP, skipping."
         continue
     else
         # If we don't have the FLOATING_IP, bring the VIRTUAL_IF down
-        [[ -v DEBUG ]] && echo "$(date) I do not have the floating IP, bringing $VIRTUAL_IF down."
+        [[ -z "$DEBUG" ]] || echo "$(date) I do not have the floating IP, bringing $VIRTUAL_IF down."
         ifconfig $VIRTUAL_IF down 2> /dev/null
     fi
 
     # Check if the FLOATING_IP is responding to ping, and continue to the next iteration if so
     if ping -c 1 $FLOATING_IP &> /dev/null; then
-        [[ -v DEBUG ]] && echo "$(date) $FLOATING_IP is responding to ping, skipping."
+        [[ -z "$DEBUG" ]] || echo "$(date) $FLOATING_IP is responding to ping, skipping."
         continue
     fi
 
@@ -64,7 +66,7 @@ while [ 1 ]; do
     
     echo "$(date) Trying to attach $FLOATING_IP ..."
     if aws ec2 assign-private-ip-addresses --allow-reassignment --network-interface-id $INTERFACE_ID --private-ip-addresses $FLOATING_IP; then
-        echo "$(date) Attached $FLOATING_IP on $INTERFACE_ID"
+        echo "$(date) Attached $FLOATING_IP on $INTERFACE_ID."
 
         ifconfig $VIRTUAL_IF $FLOATING_IP netmask $NETMASK
 
